@@ -7,14 +7,16 @@ class Solitaire_card(pygame.sprite.Sprite, cards.Card):
              "J", "Q", "K"]
     SUITS = ["c", "d", "h", "s"]
 
-    def __init__(self, rank, suit):
+    def __init__(self, rank, suit, face_up = True):
         cards.Card(rank, suit)
+        self.is_face_up = face_up
         self.image = pygame.image.load("Cards/" + str(rank) + str(suit) + ".png")
         self.rect = self.image.get_rect()
 
 class Solitaire_hand(cards.Hand):
-    def add(self, card):
-        self.cards.append(card)
+    def __init__(self, deck_num):
+        cards.Hand.__init__(self)
+        self.width = 100 + (deck_num - 1) * 125
 
 class Solitaire_deck(cards.Deck):
     def populate(self):
@@ -27,17 +29,28 @@ def main():
     FPS = 50
     Time_var = pygame.time.Clock()
     screen = pygame.display.set_mode()
+    MAIN_HEIGHT = screen.get_height()/4
     pygame.display.set_caption("Solitaire")
     main_deck = cards.Deck()
     main_deck.populate()
     main_deck.shuffle()
-    first_deck = Solitaire_hand()
+    first_deck = Solitaire_hand(1)
+    second_deck = Solitaire_hand(2)
+    third_deck = Solitaire_hand(3)
+    forth_deck = Solitaire_hand(4)
+    fifth_deck = Solitaire_hand(5)
+    sixth_deck = Solitaire_hand(6)
+    decks = [first_deck, second_deck, third_deck, forth_deck, fifth_deck, sixth_deck]
     #main_deck.deal([first_deck])
-    first_deck.add(Solitaire_card("2", "h"))
+    for deck in decks:
+        deck.add(Solitaire_card("2", "h"))
+        if deck != first_deck:
+            deck.cards[0].flip()
     running = True
     while running:
-        for card in first_deck.cards:
-            screen.blit(card.image, (screen.get_width()/2, screen.get_height()/2))
+        for deck in decks:
+            for card in deck.cards:
+                screen.blit(card.image, (deck.width, MAIN_HEIGHT))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False    
