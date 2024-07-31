@@ -24,6 +24,7 @@ class Solitaire_card(pygame.sprite.Sprite, cards.Card):
 class Solitaire_hand(cards.Hand):
     def __init__(self, deck_num):
         cards.Hand.__init__(self)
+        self.deck_num = deck_num
         self.width = 150 + (deck_num - 1) * 150
 
 class Solitaire_deck(cards.Deck):
@@ -32,6 +33,32 @@ class Solitaire_deck(cards.Deck):
             for rank in Solitaire_card.RANKS:
                 self.add(Solitaire_card(rank, suit))
 
+    def deal(self, hands, per_hand = 1):
+        for rounds in range(per_hand):
+            for hand in hands:
+                if self.cards:
+                    top_card = self.cards[0]
+                    self.give(top_card, hand)
+                    return 0
+                else:
+                    return 1
+
+def decks_population(decks, main_deck):
+    for deck in decks[:7]:
+        for i in range(0, deck.deck_num):    
+            if (i == deck.deck_num-1):
+                main_deck.cards[0].flip()
+            main_deck.deal([deck])
+    to_ret = 0
+    while (not to_ret):
+        if (main_deck.cards):
+            main_deck.cards[0].flip()
+        to_ret = main_deck.deal([decks[6]])
+    for deck in decks[7:]:
+        deck.add(Solitaire_card("Bla", "nk"))
+    for deck in decks[1:6]:
+        for card in deck.cards:
+            card.flip()
 
 def main():
     pygame.init()
@@ -40,7 +67,7 @@ def main():
     screen = pygame.display.set_mode()
     MAIN_HEIGHT = screen.get_height()/4 + screen.get_height()/16
     FACE_UP_DOWN_HEIGHT = screen.get_height()/8
-    SUIT_HEIGHT = screen.get_height()/2
+    SUIT_HEIGHT = screen.get_height()/2 + screen.get_height()/8
     screen.fill([255,255,255])
     pygame.display.set_caption("Solitaire")
     main_deck = Solitaire_deck()
@@ -62,18 +89,12 @@ def main():
     spades_deck = Solitaire_hand(5)
     decks = [first_deck, second_deck, third_deck, forth_deck, fifth_deck, sixth_deck, \
              face_down_deck, face_up_deck, hearts_deck, diamonds_deck, clubs_deck, spades_deck]
-    for deck in decks[:7]:
-        main_deck.deal([deck])
-    for deck in decks[7:]:
-        deck.add(Solitaire_card("Bla", "nk"))
-    for deck in decks[1:7]:
-        for card in deck.cards:
-            card.flip()
+    decks_population(decks, main_deck)
     running = True
     while running:
         for deck in decks[:6]:
             for card in deck.cards:
-                screen.blit(card.get_image(), (deck.width, MAIN_HEIGHT))
+                screen.blit(card.get_image(), (deck.width + (deck.cards.index(card))*2, MAIN_HEIGHT + (deck.cards.index(card))*15))
         for deck in decks[6:8]:
             for card in deck.cards:
                 screen.blit(card.get_image(), (deck.width, FACE_UP_DOWN_HEIGHT))
