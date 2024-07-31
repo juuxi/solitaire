@@ -1,0 +1,3 @@
+#!/bin/bash
+
+convert -resize 82x103 $1s.png $1s.png
