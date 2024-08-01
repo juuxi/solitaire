@@ -48,13 +48,15 @@ class Solitaire_deck(cards.Deck):
                 else:
                     return 1
 
-def decks_population(decks, main_deck, MAIN_HEIGHT, FACE_UP_DOWN_HEIGHT):
+def decks_population(decks, main_deck, screen, all_sprites):
+    MAIN_HEIGHT = screen.get_height()/4 + screen.get_height()/16
+    FACE_UP_DOWN_HEIGHT = screen.get_height()/8
+    SUIT_HEIGHT = screen.get_height()/2 + screen.get_height()/8
     for deck in decks[:7]:
         for i in range(0, deck.deck_num):    
             if (i == deck.deck_num-1 and i != 0):
                 main_deck.cards[0].flip()
             main_deck.deal([deck])
-            #change rect.x and rect.y of last card in list
             deck.cards[-1].rect.x = deck.width + deck.cards.index(deck.cards[-1])*2 
             deck.cards[-1].rect.y = MAIN_HEIGHT + (deck.cards.index(deck.cards[-1]))*15
     to_ret = 0
@@ -66,6 +68,12 @@ def decks_population(decks, main_deck, MAIN_HEIGHT, FACE_UP_DOWN_HEIGHT):
         decks[6].cards[-1].rect.y = FACE_UP_DOWN_HEIGHT
     for deck in decks[7:]:
         deck.add(Solitaire_card("Bla", "nk"))
+        all_sprites.add(deck.cards[-1])
+        deck.cards[-1].rect.x = deck.width
+        if deck in decks[8:]:
+            deck.cards[-1].rect.y = SUIT_HEIGHT
+        else: 
+            deck.cards[-1].rect.y = FACE_UP_DOWN_HEIGHT
     for deck in decks[1:6]:
         for card in deck.cards:
             card.flip()
@@ -78,9 +86,6 @@ def main():
     FPS = 50
     Time_var = pygame.time.Clock()
     screen = pygame.display.set_mode()
-    MAIN_HEIGHT = screen.get_height()/4 + screen.get_height()/16
-    FACE_UP_DOWN_HEIGHT = screen.get_height()/8
-    SUIT_HEIGHT = screen.get_height()/2 + screen.get_height()/8
     screen.fill([150,255,255])
     pygame.display.set_caption("Solitaire")
     main_deck = Solitaire_deck()
@@ -104,7 +109,7 @@ def main():
     spades_deck = Solitaire_hand(5)
     decks = [first_deck, second_deck, third_deck, forth_deck, fifth_deck, sixth_deck, \
              face_down_deck, face_up_deck, hearts_deck, diamonds_deck, clubs_deck, spades_deck]
-    decks_population(decks, main_deck, MAIN_HEIGHT, FACE_UP_DOWN_HEIGHT)
+    decks_population(decks, main_deck, screen, all_sprites)
     running = True
     while running:
         for deck in decks[:6]:
@@ -112,17 +117,17 @@ def main():
                 screen.blit(card.get_image(), (card.rect.x, card.rect.y))
         for deck in decks[6:8]:
             for card in deck.cards:
-                screen.blit(card.get_image(), (deck.width, FACE_UP_DOWN_HEIGHT))
+                screen.blit(card.get_image(), (card.rect.x, card.rect.y))
         for deck in decks[8:]:
             for card in deck.cards:
-                screen.blit(card.get_image(), (deck.width, SUIT_HEIGHT))
+                screen.blit(card.get_image(), (card.rect.x, card.rect.y))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False    
             elif event.type == MOUSEBUTTONDOWN:
                 for deck in decks:
                     for card in deck.cards:
-                        if card.rect.collidepoint(event.pos):
+                        if card.rect.collidepoint(event.pos) and card.is_face_up:
                             card.moving = True
             elif event.type == MOUSEBUTTONUP:
                 for deck in decks:
@@ -134,7 +139,8 @@ def main():
                     for card in deck.cards:
                         if(card.moving):
                             card.rect.move_ip(event.rel)
-        all_sprites.update()
+        screen.fill([155, 255, 255])        
+        all_sprites.draw(screen)
         pygame.display.update()   
         Time_var.tick(FPS)     
     pygame.quit()
