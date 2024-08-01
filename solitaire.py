@@ -17,6 +17,7 @@ class Solitaire_card(pygame.sprite.Sprite, cards.Card):
         self.rect = self.image.get_rect()
         self.rect.x = 0
         self.rect.y = 0
+        self.moving = False
 
     def get_image (self):
         if self.is_face_up:
@@ -80,7 +81,7 @@ def main():
     MAIN_HEIGHT = screen.get_height()/4 + screen.get_height()/16
     FACE_UP_DOWN_HEIGHT = screen.get_height()/8
     SUIT_HEIGHT = screen.get_height()/2 + screen.get_height()/8
-    screen.fill([255,255,255])
+    screen.fill([150,255,255])
     pygame.display.set_caption("Solitaire")
     main_deck = Solitaire_deck()
     main_deck.populate()
@@ -108,7 +109,7 @@ def main():
     while running:
         for deck in decks[:6]:
             for card in deck.cards:
-                screen.blit(card.get_image(), (deck.width + (deck.cards.index(card))*2, MAIN_HEIGHT + (deck.cards.index(card))*15))
+                screen.blit(card.get_image(), (card.rect.x, card.rect.y))
         for deck in decks[6:8]:
             for card in deck.cards:
                 screen.blit(card.get_image(), (deck.width, FACE_UP_DOWN_HEIGHT))
@@ -118,12 +119,22 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False    
-            if event.type == MOUSEBUTTONDOWN:
+            elif event.type == MOUSEBUTTONDOWN:
                 for deck in decks:
                     for card in deck.cards:
                         if card.rect.collidepoint(event.pos):
-                            text_surface = my_font.render('Some Text', False, (0, 0, 0))
-                            screen.blit(text_surface, (screen.get_width()/2, 0))
+                            card.moving = True
+            elif event.type == MOUSEBUTTONUP:
+                for deck in decks:
+                    for card in deck.cards:
+                        if(card.moving):
+                            card.moving = False
+            elif event.type == MOUSEMOTION:
+                for deck in decks:
+                    for card in deck.cards:
+                        if(card.moving):
+                            card.rect.move_ip(event.rel)
+        all_sprites.update()
         pygame.display.update()   
         Time_var.tick(FPS)     
     pygame.quit()
