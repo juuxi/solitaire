@@ -78,6 +78,12 @@ def decks_population(decks, main_deck, screen, all_sprites):
         for card in deck.cards:
             card.flip()
 
+def is_near_deck(card, decks):
+    for deck in decks:
+        if card.rect.x in range(deck.width - 5, deck.width + 6):
+            return True, deck.deck_num
+    return False, 0
+
 def main():
     pygame.init()
     pygame.font.init()
@@ -86,6 +92,9 @@ def main():
     FPS = 50
     Time_var = pygame.time.Clock()
     screen = pygame.display.set_mode()
+    MAIN_HEIGHT = screen.get_height()/4 + screen.get_height()/16
+    FACE_UP_DOWN_HEIGHT = screen.get_height()/8
+    SUIT_HEIGHT = screen.get_height()/2 + screen.get_height()/8
     screen.fill([150,255,255])
     pygame.display.set_caption("Solitaire")
     main_deck = Solitaire_deck()
@@ -111,6 +120,8 @@ def main():
              face_down_deck, face_up_deck, hearts_deck, diamonds_deck, clubs_deck, spades_deck]
     decks_population(decks, main_deck, screen, all_sprites)
     running = True
+    was_x = None
+    was_y = None
     while running:
         for deck in decks[:6]:
             for card in deck.cards:
@@ -129,11 +140,37 @@ def main():
                     for card in deck.cards:
                         if card.rect.collidepoint(event.pos) and card.is_face_up:
                             card.moving = True
+                            was_x = card.rect.x
+                            was_y = card.rect.y
             elif event.type == MOUSEBUTTONUP:
                 for deck in decks:
                     for card in deck.cards:
                         if(card.moving):
                             card.moving = False
+                            is_near, num_of_deck = is_near_deck(card, decks)
+                            if not is_near:
+                                card.rect.x, card.rect.y = was_x, was_y
+                            else:
+                                #deal this card to the closest deck
+                                if card.rect.y in range(int(MAIN_HEIGHT)-50, int(MAIN_HEIGHT)+51):
+                                    for give_deck in decks[0:7]:
+                                        if give_deck.width == 150 + (num_of_deck - 1) * 150:
+                                            deck.give(card, give_deck)
+                                            card.rect.x = give_deck.width + give_deck.cards.index(card)*2 
+                                            card.rect.y = MAIN_HEIGHT + (give_deck.cards.index(card))*15
+                                elif card.rect.y in range(int(SUIT_HEIGHT)-10, int(SUIT_HEIGHT)+11):
+                                    if num_of_deck == 2:
+                                        deck.give(card,hearts_deck)
+                                    elif num_of_deck == 3:
+                                        deck.give(card, diamonds_deck)
+                                    elif num_of_deck == 4:
+                                        deck.give(card, clubs_deck)
+                                    elif num_of_deck == 5:
+                                        deck.give(card, spades_deck)
+                                    else:
+                                        card.rect.x, card.rect.y = was_x, was_y
+                                else:
+                                    card.rect.x, card.rect.y = was_x, was_y
             elif event.type == MOUSEMOTION:
                 for deck in decks:
                     for card in deck.cards:
