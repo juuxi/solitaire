@@ -84,6 +84,19 @@ def is_near_deck(card, decks):
             return True, deck.deck_num
     return False, 0
 
+def give_to_suits(card, deck, deck_name, all_sprites, MAIN_HEIGHT):
+    if deck_name.cards[0].rank == "Bla":
+        deck_name.cards[0].kill()
+        deck_name.clear()
+        #delete this card from sprites
+    deck.give(card,deck_name)
+    if not deck.cards:
+            deck.add(Solitaire_card("Bla", "nk"))
+            deck.cards[0].rect.x = deck.width
+            deck.cards[0].rect.y = MAIN_HEIGHT
+            all_sprites.add(deck.cards[0])
+            #add this card to sprites
+
 def main():
     pygame.init()
     pygame.font.init()
@@ -158,15 +171,17 @@ def main():
                                             deck.give(card, give_deck)
                                             card.rect.x = give_deck.width + give_deck.cards.index(card)*2 
                                             card.rect.y = MAIN_HEIGHT + (give_deck.cards.index(card))*15
+                                            if not deck.cards:
+                                                deck.add("Bla", "nk")
                                 elif card.rect.y in range(int(SUIT_HEIGHT)-10, int(SUIT_HEIGHT)+11):
                                     if num_of_deck == 2:
-                                        deck.give(card,hearts_deck)
+                                        give_to_suits(card, deck, hearts_deck, all_sprites, MAIN_HEIGHT)
                                     elif num_of_deck == 3:
-                                        deck.give(card, diamonds_deck)
+                                        give_to_suits(card, deck, diamonds_deck, all_sprites, MAIN_HEIGHT)
                                     elif num_of_deck == 4:
-                                        deck.give(card, clubs_deck)
+                                        give_to_suits(card, deck, clubs_deck, all_sprites, MAIN_HEIGHT)
                                     elif num_of_deck == 5:
-                                        deck.give(card, spades_deck)
+                                        give_to_suits(card, deck, spades_deck, all_sprites, MAIN_HEIGHT)
                                     else:
                                         card.rect.x, card.rect.y = was_x, was_y
                                 else:
