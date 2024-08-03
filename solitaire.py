@@ -150,6 +150,12 @@ def deal_to_suits(card, deck, decks, num_of_deck, was_x, was_y):
     else:
         card.rect.x, card.rect.y = was_x, was_y
 
+def deal_up_down(event, card, decks, to_face_up):
+    if card.rect.collidepoint(event.pos) and to_face_up == True:
+            card.is_face_up = True
+            card.rect.x = decks[7].width
+            decks[6].give(card, decks[7])
+
 def main():
     pygame.font.init()
     my_font = pygame.font.SysFont("Times New Roman", 20)
@@ -182,6 +188,7 @@ def main():
     running = True
     was_x = None
     was_y = None
+    to_face_up = False
     while running:
         screen.fill([155, 255, 255]) 
         blit_decks(decks)
@@ -190,11 +197,17 @@ def main():
                 running = False    
             elif event.type == MOUSEBUTTONDOWN:
                 for deck in decks:
+                    if (to_face_up):
+                        break
                     for card in deck.cards:
                         if card.rect.collidepoint(event.pos) and card.is_face_up and card.rank != "Bla":
                             card.moving = True
                             was_x = card.rect.x
                             was_y = card.rect.y
+                        to_face_up = False
+                        if card.rect.collidepoint(event.pos) and deck == decks[6]:
+                            to_face_up = True
+                            break
 
             elif event.type == MOUSEBUTTONUP:
                 for deck in decks:
@@ -206,6 +219,9 @@ def main():
                                 card.rect.x, card.rect.y = was_x, was_y
                             else:
                                 deal_to_closest(card, deck, decks, num_of_deck, was_x, was_y)
+                        elif deck == decks[6]:
+                            deal_up_down(event, card, decks, to_face_up)
+                            to_face_up = False
 
             elif event.type == MOUSEMOTION:
                 for deck in decks:
