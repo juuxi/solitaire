@@ -77,7 +77,7 @@ def decks_population(decks, main_deck, screen, all_sprites):
             card.flip()
 
 def populate_main(decks, main_deck):
-    for deck in decks[:7]:
+    for deck in decks[:6]:
         for i in range(0, deck.deck_num):    
             if (i == deck.deck_num-1 and i != 0):
                 main_deck.cards[0].flip()
@@ -132,7 +132,7 @@ def deal_to_closest(card, deck, decks, num_of_deck, was_x, was_y):
         card.rect.x, card.rect.y = was_x, was_y
 
 def deal_to_main(card, deck, decks, num_of_deck):
-    for give_deck in decks[0:7]:
+    for give_deck in decks[0:6]:
         if give_deck.width == 150 + (num_of_deck - 1) * 150:
             deck.give(card, give_deck)
             card.rect.x = give_deck.width + give_deck.cards.index(card)*2 
@@ -183,6 +183,7 @@ def main():
     was_x = None
     was_y = None
     while running:
+        screen.fill([155, 255, 255]) 
         blit_decks(decks)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -190,7 +191,7 @@ def main():
             elif event.type == MOUSEBUTTONDOWN:
                 for deck in decks:
                     for card in deck.cards:
-                        if card.rect.collidepoint(event.pos) and card.is_face_up:
+                        if card.rect.collidepoint(event.pos) and card.is_face_up and card.rank != "Bla":
                             card.moving = True
                             was_x = card.rect.x
                             was_y = card.rect.y
@@ -211,8 +212,6 @@ def main():
                     for card in deck.cards:
                         if(card.moving):
                             card.rect.move_ip(event.rel)
-        screen.fill([155, 255, 255])        
-        all_sprites.draw(screen)
         pygame.display.update()   
         Time_var.tick(FPS)     
     pygame.quit()
