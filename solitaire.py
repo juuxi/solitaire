@@ -51,6 +51,12 @@ class Solitaire_hand(cards.Hand):
             self.cards[0].rect.x = self.width
             self.cards[0].rect.y = self.height
             all_sprites.add(self.cards[0])
+        else:
+            self.flip_main()
+
+    def flip_main(self):
+        if self.height == MAIN_HEIGHT:
+            self.cards[-1].is_face_up = True
 
 class Solitaire_deck(cards.Deck):
     def populate(self):
@@ -175,9 +181,15 @@ def is_dealable_suits(card, give_deck):
 
 def deal_up_down(event, card, decks, to_face_up):
     if card.rect.collidepoint(event.pos) and to_face_up == True:
-            card.is_face_up = True
-            card.rect.x = decks[7].width
-            decks[6].give(card, decks[7])
+            if (decks[6].cards[0].rank != "Bla"):
+                card.is_face_up = True 
+                card.rect.x = decks[7].width   
+                decks[6].give(card, decks[7])  
+            else:
+                while decks[7].cards[0].rank != "Bla":
+                    decks[7].cards[0].is_face_up = False
+                    decks[7].cards[0].rect.x = decks[6].width   
+                    decks[7].give(decks[7].cards[0], decks[6])  
 
 def main():
     pygame.font.init()
