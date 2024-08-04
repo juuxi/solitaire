@@ -123,7 +123,7 @@ def blit_decks(decks):
 
 def deal_to_closest(card, deck, decks, num_of_deck, was_x, was_y):
     if card.rect.y in range(int(MAIN_HEIGHT)-20, int(MAIN_HEIGHT)+21):
-        deal_to_main(card, deck, decks, num_of_deck)
+        deal_to_main(card, deck, decks, num_of_deck, was_x, was_y)
 
     elif card.rect.y in range(int(SUIT_HEIGHT)-20, int(SUIT_HEIGHT)+21):
         deal_to_suits(card, deck, decks, num_of_deck, was_x, was_y)
@@ -131,12 +131,27 @@ def deal_to_closest(card, deck, decks, num_of_deck, was_x, was_y):
     else:
         card.rect.x, card.rect.y = was_x, was_y
 
-def deal_to_main(card, deck, decks, num_of_deck):
+def deal_to_main(card, deck, decks, num_of_deck, was_x, was_y):
     for give_deck in decks[0:6]:
         if give_deck.width == 150 + (num_of_deck - 1) * 150:
-            deck.give(card, give_deck)
-            card.rect.x = give_deck.width + give_deck.cards.index(card)*2 
-            card.rect.y = MAIN_HEIGHT + (give_deck.cards.index(card))*15    
+            if is_dealable_main(card, give_deck):
+                deck.give(card, give_deck)
+                card.rect.x = give_deck.width + give_deck.cards.index(card)*2 
+                card.rect.y = MAIN_HEIGHT + (give_deck.cards.index(card))*15  
+            else:
+                card.rect.x, card.rect.y = was_x, was_y  
+
+def is_dealable_main(card, give_deck):
+    blacks = ["c", "s"]
+    reds = ["h", "d"]
+    if card.suit in blacks and give_deck.cards[-1].suit in blacks:
+        return False
+    if card.suit in reds and give_deck.cards[-1].suit in reds:
+        return False
+    if card.RANKS.index(card.rank) == card.RANKS.index(give_deck.cards[-1].rank) - 1:
+        return True
+    else:
+        return False
 
 def deal_to_suits(card, deck, decks, num_of_deck, was_x, was_y):
     if num_of_deck == 2:
@@ -201,6 +216,9 @@ def main():
                         break
                     for card in deck.cards:
                         if card.rect.collidepoint(event.pos) and card.is_face_up and card.rank != "Bla":
+                            if (deck == face_up_deck):
+                                if card != deck.cards[-1]:
+                                    continue
                             card.moving = True
                             was_x = card.rect.x
                             was_y = card.rect.y
