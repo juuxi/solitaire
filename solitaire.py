@@ -150,20 +150,28 @@ def is_dealable_main(card, give_deck):
         return False
     if card.RANKS.index(card.rank) == card.RANKS.index(give_deck.cards[-1].rank) - 1:
         return True
-    else:
-        return False
+    return False
 
 def deal_to_suits(card, deck, decks, num_of_deck, was_x, was_y):
-    if num_of_deck == 2:
+    if num_of_deck == 2 and is_dealable_suits(card, decks[8]):
         deck.give(card, decks[8])
-    elif num_of_deck == 3:
+    elif num_of_deck == 3 and is_dealable_suits(card, decks[9]):
         deck.give(card, decks[9])
-    elif num_of_deck == 4:
+    elif num_of_deck == 4 and is_dealable_suits(card, decks[10]):
         deck.give(card, decks[10])
-    elif num_of_deck == 5:
+    elif num_of_deck == 5 and is_dealable_suits(card, decks[11]):
         deck.give(card, decks[11])
     else:
         card.rect.x, card.rect.y = was_x, was_y
+
+def is_dealable_suits(card, give_deck):
+    if card.rank == "A":
+        return True
+    if card.suit != give_deck.cards[-1].suit:
+        return False
+    if card.RANKS.index(card.rank) == card.RANKS.index(give_deck.cards[-1].rank) + 1:
+        return True
+    return False
 
 def deal_up_down(event, card, decks, to_face_up):
     if card.rect.collidepoint(event.pos) and to_face_up == True:
