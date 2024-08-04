@@ -112,7 +112,7 @@ def populate_with_blank(decks):
 
 def is_near_deck(card, decks):
     for deck in decks:
-        if card.rect.x in range(deck.width - 10, deck.width + 11):
+        if card.rect.x in range(deck.cards[-1].rect.x - 10, deck.cards[-1].rect.x + 11):
             return True, deck.deck_num
     return False, 0
 
@@ -128,12 +128,14 @@ def blit_decks(decks):
             screen.blit(card.get_image(), (card.rect.x, card.rect.y))
 
 def deal_to_closest(card, deck, decks, num_of_deck, was_x, was_y):
-    if card.rect.y in range(int(MAIN_HEIGHT)-20, int(MAIN_HEIGHT)+21):
-        deal_to_main(card, deck, decks, num_of_deck, was_x, was_y)
+    for check_deck in decks[:6]:
+        if card.rect.y in range(int(check_deck.height), int(check_deck.height) + len(check_deck.cards)*15):
+            deal_to_main(card, deck, decks, num_of_deck, was_x, was_y)
+            return
 
-    elif card.rect.y in range(int(SUIT_HEIGHT)-20, int(SUIT_HEIGHT)+21):
+    if card.rect.y in range(int(SUIT_HEIGHT)-20, int(SUIT_HEIGHT)+21):
         deal_to_suits(card, deck, decks, num_of_deck, was_x, was_y)
-
+        return
     else:
         card.rect.x, card.rect.y = was_x, was_y
 
@@ -150,6 +152,8 @@ def deal_to_main(card, deck, decks, num_of_deck, was_x, was_y):
 def is_dealable_main(card, give_deck):
     blacks = ["c", "s"]
     reds = ["h", "d"]
+    if card.rank == "K" and give_deck.cards[0].rank == "Bla":
+        return True
     if card.suit in blacks and give_deck.cards[-1].suit in blacks:
         return False
     if card.suit in reds and give_deck.cards[-1].suit in reds:
@@ -161,12 +165,20 @@ def is_dealable_main(card, give_deck):
 def deal_to_suits(card, deck, decks, num_of_deck, was_x, was_y):
     if num_of_deck == 2 and is_dealable_suits(card, decks[8]):
         deck.give(card, decks[8])
+        card.rect.x = decks[8].width
+        card.rect.y = SUIT_HEIGHT
     elif num_of_deck == 3 and is_dealable_suits(card, decks[9]):
         deck.give(card, decks[9])
+        card.rect.x = decks[9].width
+        card.rect.y = SUIT_HEIGHT
     elif num_of_deck == 4 and is_dealable_suits(card, decks[10]):
         deck.give(card, decks[10])
+        card.rect.x = decks[10].width
+        card.rect.y = SUIT_HEIGHT
     elif num_of_deck == 5 and is_dealable_suits(card, decks[11]):
         deck.give(card, decks[11])
+        card.rect.x = decks[11].width
+        card.rect.y = SUIT_HEIGHT
     else:
         card.rect.x, card.rect.y = was_x, was_y
 
@@ -177,6 +189,12 @@ def is_dealable_suits(card, give_deck):
         return False
     if card.RANKS.index(card.rank) == card.RANKS.index(give_deck.cards[-1].rank) + 1:
         return True
+    return False
+
+def is_win(decks):
+    if len(decks[8].cards) == 13 and len(decks[9].cards) == 13:
+        if len(decks[10].cards) == 13 and len(decks[11].cards) == 13:
+            return True
     return False
 
 def deal_up_down(event, card, decks, to_face_up):
@@ -236,7 +254,7 @@ def main():
                         break
                     for card in deck.cards:
                         if card.rect.collidepoint(event.pos) and card.is_face_up and card.rank != "Bla":
-                            if (deck == face_up_deck):
+                            if (deck == face_up_deck or deck in decks[8:]):
                                 if card != deck.cards[-1]:
                                     continue
                             card.moving = True
@@ -266,6 +284,9 @@ def main():
                     for card in deck.cards:
                         if(card.moving):
                             card.rect.move_ip(event.rel)
+        if (is_win(decks)):
+            text_surface = my_font.render('You won!', False, (0, 0, 0))
+            screen.blit(text_surface, (250, 0))
         pygame.display.update()   
         Time_var.tick(FPS)     
     pygame.quit()
