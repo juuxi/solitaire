@@ -112,8 +112,9 @@ def populate_with_blank(decks):
 
 def is_near_deck(card, decks):
     for deck in decks:
-        if card.rect.x in range(deck.cards[-1].rect.x - 10, deck.cards[-1].rect.x + 11):
-            return True, deck.deck_num
+        if not deck.cards[-1].moving:
+            if card.rect.x in range(deck.cards[-1].rect.x - 10, deck.cards[-1].rect.x + 11):
+                return True, deck.deck_num
     return False, 0
 
 def blit_decks(decks):
@@ -129,7 +130,7 @@ def blit_decks(decks):
 
 def deal_to_closest(card, deck, decks, num_of_deck, was_x, was_y):
     for check_deck in decks[:6]:
-        if card.rect.y in range(int(check_deck.height), int(check_deck.height) + len(check_deck.cards)*15):
+        if card.rect.y in range(int(check_deck.height), int(check_deck.height) + len(check_deck.cards)*15 + 20):
             deal_to_main(card, deck, decks, num_of_deck, was_x, was_y)
             return
 
@@ -143,15 +144,24 @@ def deal_to_main(card, deck, decks, num_of_deck, was_x, was_y):
     for give_deck in decks[0:6]:
         if give_deck.width == 150 + (num_of_deck - 1) * 150:
             if is_dealable_main(card, give_deck):
-                deck.give(card, give_deck)
-                card.rect.x = give_deck.width + give_deck.cards.index(card)*2 
-                card.rect.y = MAIN_HEIGHT + (give_deck.cards.index(card))*15  
+                for cards in deck.cards[deck.cards.index(card):]:
+                    deck.give(cards, give_deck)
+                    cards.rect.x = give_deck.width + give_deck.cards.index(cards)*2 
+                    cards.rect.y = MAIN_HEIGHT + (give_deck.cards.index(cards))*15  
+                    cards.moving = False
             else:
-                card.rect.x, card.rect.y = was_x, was_y  
+                if deck in decks[:6]:
+                    for cards in deck.cards[deck.cards.index(card):]:
+                            cards.rect.x = deck.width + deck.cards.index(cards)*2 
+                            cards.rect.y = MAIN_HEIGHT + (deck.cards.index(cards))*15  
+                else:
+                    card.rect.x, card.rect.y = was_x, was_y  
 
 def is_dealable_main(card, give_deck):
     blacks = ["c", "s"]
     reds = ["h", "d"]
+    if card.rank == "A":
+        return False
     if card.rank == "K" and give_deck.cards[0].rank == "Bla":
         return True
     if card.suit in blacks and give_deck.cards[-1].suit in blacks:
@@ -249,28 +259,36 @@ def main():
             if event.type == pygame.QUIT:
                 running = False    
             elif event.type == MOUSEBUTTONDOWN:
-                for deck in decks:
+                for deck in decks[6:]:
                     if (to_face_up):
                         break
                     for card in deck.cards:
-                        if card.rect.collidepoint(event.pos) and card.is_face_up and card.rank != "Bla":
-                            if (deck == face_up_deck or deck in decks[8:]):
-                                if card != deck.cards[-1]:
-                                    continue
-                            card.moving = True
-                            was_x = card.rect.x
-                            was_y = card.rect.y
                         to_face_up = False
                         if card.rect.collidepoint(event.pos) and deck == decks[6]:
                             to_face_up = True
                             break
+                        if card.rect.collidepoint(event.pos) and card.is_face_up and card.rank != "Bla":
+                            if (deck == face_up_deck or deck in decks[8:]):
+                                if card != deck.cards[-1]:
+                                    continue
+                            if deck == face_up_deck:
+                                card.moving = True
+                                was_x = card.rect.x
+                                was_y = card.rect.y
+                for deck in decks[:6]:
+                    for card in reversed(deck.cards):
+                        if card.rect.collidepoint(event.pos) and deck.cards[-1].moving == False:
+                            for cards in deck.cards[deck.cards.index(card):]:
+                                cards.moving = True
+                            was_x = card.rect.x
+                            was_y = card.rect.y
 
             elif event.type == MOUSEBUTTONUP:
                 for deck in decks:
                     for card in deck.cards:
                         if(card.moving):
-                            card.moving = False
                             is_near, num_of_deck = is_near_deck(card, decks)
+                            card.moving = False
                             if not is_near:
                                 card.rect.x, card.rect.y = was_x, was_y
                             else:
