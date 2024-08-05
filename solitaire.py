@@ -151,9 +151,10 @@ def deal_to_main(card, deck, decks, num_of_deck, was_x, was_y):
                     cards.moving = False
             else:
                 if deck in decks[:6]:
-                    for cards in deck.cards[deck.cards.index(card):]:
-                            cards.rect.x = deck.width + deck.cards.index(cards)*2 
-                            cards.rect.y = MAIN_HEIGHT + (deck.cards.index(cards))*15  
+                    for back_cards in deck.cards[deck.cards.index(card):]:
+                            back_cards.rect.x = deck.width + deck.cards.index(back_cards)*2 
+                            back_cards.rect.y = MAIN_HEIGHT + (deck.cards.index(back_cards))*15  
+                            back_cards.moving = False
                 else:
                     card.rect.x, card.rect.y = was_x, was_y  
 
@@ -162,8 +163,11 @@ def is_dealable_main(card, give_deck):
     reds = ["h", "d"]
     if card.rank == "A":
         return False
-    if card.rank == "K" and give_deck.cards[0].rank == "Bla":
-        return True
+    if give_deck.cards[0].rank == "Bla":
+        if card.rank == "K":
+            return True
+        else:
+            return False
     if card.suit in blacks and give_deck.cards[-1].suit in blacks:
         return False
     if card.suit in reds and give_deck.cards[-1].suit in reds:
@@ -290,10 +294,16 @@ def main():
                             is_near, num_of_deck = is_near_deck(card, decks)
                             card.moving = False
                             if not is_near:
-                                card.rect.x, card.rect.y = was_x, was_y
+                                if deck in decks[:6]:
+                                    for back_cards in deck.cards[deck.cards.index(card):]:
+                                            back_cards.rect.x = deck.width + deck.cards.index(back_cards)*2 
+                                            back_cards.rect.y = MAIN_HEIGHT + (deck.cards.index(back_cards))*15  
+                                            back_cards.moving = False
+                                else:
+                                    card.rect.x, card.rect.y = was_x, was_y
                             else:
                                 deal_to_closest(card, deck, decks, num_of_deck, was_x, was_y)
-                        elif deck == decks[6]:
+                        elif deck == decks[6] and to_face_up:
                             deal_up_down(event, card, decks, to_face_up)
                             to_face_up = False
 
@@ -304,7 +314,7 @@ def main():
                             card.rect.move_ip(event.rel)
         if (is_win(decks)):
             text_surface = my_font.render('You won!', False, (0, 0, 0))
-            screen.blit(text_surface, (250, 0))
+            screen.blit(text_surface, (screen.get_width()/2, 0))
         pygame.display.update()   
         Time_var.tick(FPS)     
     pygame.quit()
